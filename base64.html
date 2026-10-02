@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b2838">
+<title>ByteFormatika :: Base64</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <b>ByteFormatika</b>
+  <span class="sep">::</span>
+  <a href="index.html">главная</a>
+  <span class="sep">|</span>
+  <a href="tools.html">инструменты</a>
+  <span class="sep">|</span>
+  <span class="active">base64</span>
+  <span class="sep">|</span>
+  <a href="about.html">об авторе</a>
+</div>
+
+<div class="wrap">
+  <div class="head">
+    <h1><span class="byte">Base64</span></h1>
+    <div class="sub">// кодирование и декодирование //</div>
+  </div>
+
+  <div class="panel">
+    <h2>Ввод</h2>
+    <textarea id="inp" placeholder="Введите текст или Base64-строку…">Привет, мир!</textarea>
+    <div class="tool-row">
+      <button class="btn" id="encBtn">→ кодировать</button>
+      <button class="btn" id="decBtn">→ декодировать</button>
+      <button class="btn" id="swapBtn">⇅ обмен</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Результат</h2>
+    <div class="result-wrap">
+      <div class="result" id="out">—</div>
+      <button class="copy" id="copyBtn" hidden>копировать</button>
+    </div>
+  </div>
+
+  <div class="foot">
+    &copy; ByteFormatika &nbsp;·&nbsp; 2026–????<br>
+    <a href="tools.html">← к инструментам</a>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const inpEl = $('inp'), outEl = $('out'), copyBtn = $('copyBtn');
+
+function utf8Encode(str) {
+  return unescape(encodeURIComponent(str));
+}
+function utf8Decode(str) {
+  return decodeURIComponent(escape(str));
+}
+
+function show(txt) {
+  outEl.className = 'result';
+  outEl.textContent = txt;
+  copyBtn.hidden = false;
+}
+function showErr(txt) {
+  outEl.className = 'result err';
+  outEl.textContent = txt;
+  copyBtn.hidden = true;
+}
+
+$('encBtn').onclick = () => {
+  try { show(btoa(utf8Encode(inpEl.value))); }
+  catch (e) { showErr(e.message); }
+};
+$('decBtn').onclick = () => {
+  try {
+    let s = inpEl.value.trim().replace(/\s+/g, '');
+    if (!/^[A-Za-z0-9+/=]*$/.test(s)) throw new Error('Недопустимые символы Base64.');
+    show(utf8Decode(atob(s)));
+  } catch (e) { showErr('Ошибка декодирования: ' + e.message); }
+};
+$('swapBtn').onclick = () => {
+  if (outEl.classList.contains('err') || outEl.textContent === '—') return;
+  inpEl.value = outEl.textContent;
+  outEl.className = 'result';
+  outEl.textContent = '—';
+  copyBtn.hidden = true;
+};
+copyBtn.onclick = async () => {
+  const txt = outEl.textContent;
+  try {
+    await navigator.clipboard.writeText(txt);
+    copyBtn.textContent = 'скопировано';
+    setTimeout(() => copyBtn.textContent = 'копировать', 1200);
+  } catch {}
+};
+</script>
+</body>
+</html>

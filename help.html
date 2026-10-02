@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b2838">
+<title>ByteFormatika :: справка</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <b>ByteFormatika</b>
+  <span class="sep">::</span>
+  <a href="index.html">главная</a>
+  <span class="sep">|</span>
+  <a href="tools.html">инструменты</a>
+  <span class="sep">|</span>
+  <span class="active">справка</span>
+  <span class="sep">|</span>
+  <a href="about.html">об авторе</a>
+</div>
+
+<div class="wrap">
+  <div class="head">
+    <h1>Справка</h1>
+    <div class="sub">// как пользоваться сайтом //</div>
+  </div>
+
+  <div class="panel">
+    <h2>О сайте</h2>
+    <p>
+      <b>ByteFormatika</b> — набор маленьких утилит: конвертер систем счисления,
+      перевод римских цифр, работа с цветом, Base64, хэши, генератор паролей,
+      Unix-время, регистр текста.
+    </p>
+    <p>Всё работает в браузере. Никакой регистрации, рекламы, аналитики.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Конвертер систем счисления</h2>
+    <ol>
+      <li>Введите число в поле «Число».</li>
+      <li>Выберите основание в списке «Из системы».</li>
+      <li>Выберите основание в списке «В систему».</li>
+      <li>Результат появится автоматически.</li>
+    </ol>
+    <p class="hint">
+      Поддерживаются основания <code>2</code>–<code>36</code>.
+      Буквы <code>A–Z</code> обозначают 10–35. Пробелы и подчёркивания игнорируются.
+      Используется <code>BigInt</code> — без потери точности.
+    </p>
+  </div>
+
+  <div class="panel">
+    <h2>История</h2>
+    <p>Нажмите «💾 в историю» — текущий результат сохранится в браузере.</p>
+    <p>Клик по записи вернёт её в конвертер. Хранится до 30 последних записей.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Биты и байты</h2>
+    <p>Введите любое значение — остальные пересчитаются мгновенно.</p>
+    <p class="hint">1 байт = 8 бит · 1 Кбайт = 1024 байта · 1 Мбайт = 1024 Кбайт · 1 Гбайт = 1024 Мбайт.</p>
+  </div>
+
+  <div class="panel">
+    <h2>ASCII</h2>
+    <p>Таблица символов 0–127. Клик по символу подставляет его в поле ввода конвертера.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Горячие клавиши</h2>
+    <ul>
+      <li><code>Ctrl</code> / <code>⌘</code> + <code>Enter</code> — пересчитать.</li>
+    </ul>
+  </div>
+
+  <div class="foot">
+    &copy; ByteFormatika &nbsp;·&nbsp; 2026–????<br>
+    <a href="index.html">← на главную</a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b2838">
+<title>ByteFormatika :: конвертер систем счисления</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <b>ByteFormatika</b>
+  <span class="sep">::</span>
+  <span class="active">главная</span>
+  <span class="sep">|</span>
+  <a href="tools.html">инструменты</a>
+  <span class="sep">|</span>
+  <a href="help.html">справка</a>
+  <span class="sep">|</span>
+  <a href="about.html">об авторе</a>
+</div>
+
+<div class="wrap">
+
+  <div class="head">
+    <h1><span class="byte">Byte</span>Formatika</h1>
+    <div class="sub">// конвертер систем счисления // v2.0 //</div>
+  </div>
+
+  <div class="notice">
+    <div class="notice-icon">i</div>
+    <div class="notice-body">
+      <b>Полезное</b>
+      Кроме конвертера — история, биты/байты, ASCII и другие инструменты.
+      <a href="tools.html">Смотреть все →</a>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Число</h2>
+    <label for="value">Введите число</label>
+    <input id="value" type="text" inputmode="text" spellcheck="false"
+           autocomplete="off" autocapitalize="characters"
+           value="1011" placeholder="1011 / FF / 3E8">
+  </div>
+
+  <div class="panel">
+    <h2>Системы счисления</h2>
+    <div class="row">
+      <div>
+        <label for="from">Из системы</label>
+        <select id="from"></select>
+      </div>
+      <button class="swap" id="swapBtn" title="Поменять местами">⇅</button>
+      <div>
+        <label for="to">В систему</label>
+        <select id="to"></select>
+      </div>
+    </div>
+    <div class="quick" id="quick"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Результат</h2>
+    <div class="result-wrap">
+      <div class="result" id="out">—</div>
+      <button class="copy" id="copyBtn" hidden>копировать</button>
+    </div>
+    <div class="tool-row">
+      <button class="btn" id="swapBtn2">⇅ поменять</button>
+      <button class="btn" id="saveBtn">💾 в историю</button>
+      <button class="btn" id="clearBtn">🗑 очистить</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>История</h2>
+    <div id="history" class="history">
+      <div class="history-empty">Пока пусто. Сохрани результат кнопкой «в историю».</div>
+    </div>
+    <div class="tool-row" id="historyTools" hidden>
+      <button class="btn" id="clearHistory">🗑 очистить всю историю</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Инструменты</h2>
+    <div class="tools-grid">
+      <a class="btn" href="roman.html">Римские цифры</a>
+      <a class="btn" href="color.html">Цвет HEX/RGB/HSL</a>
+      <a class="btn" href="base64.html">Base64</a>
+      <a class="btn" href="hash.html">Хэши</a>
+      <a class="btn" href="password.html">Пароли</a>
+      <a class="btn" href="timestamp.html">Unix-время</a>
+      <a class="btn" href="case.html">Регистр текста</a>
+      <a class="btn" href="tools.html">Все →</a>
+    </div>
+  </div>
+
+  <div class="panel" id="bits">
+    <h2>Биты → байты → Кбайты</h2>
+    <p class="hint">Введи число в любое поле — остальные обновятся сами.</p>
+    <div class="bit-grid">
+      <label for="bits">Биты</label><input id="bits" type="text" inputmode="numeric" value="0">
+      <label for="bytes">Байты</label><input id="bytes" type="text" inputmode="numeric" value="0">
+      <label for="kbytes">Кбайты</label><input id="kbytes" type="text" inputmode="numeric" value="0">
+      <label for="mbytes">Мбайты</label><input id="mbytes" type="text" inputmode="numeric" value="0">
+      <label for="gbytes">Гбайты</label><input id="gbytes" type="text" inputmode="numeric" value="0">
+    </div>
+  </div>
+
+  <div class="panel" id="ascii">
+    <h2>ASCII-таблица (0–127)</h2>
+    <p class="hint">Нажми на символ — попадёт в поле ввода наверху страницы.</p>
+    <div class="ascii-box" id="asciiBox"></div>
+  </div>
+
+  <div class="foot">
+    &copy; ByteFormatika &nbsp;·&nbsp; 2026–????<br>
+    <a href="tools.html">к инструментам →</a>
+  </div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const valueEl = $('value');
+const fromEl  = $('from');
+const toEl    = $('to');
+const outEl   = $('out');
+const copyBtn = $('copyBtn');
+
+const BASE_NAMES = {
+  2:'2 — двоичная', 3:'3 — троичная', 4:'4', 5:'5', 6:'6', 7:'7',
+  8:'8 — восьмеричная', 9:'9', 10:'10 — десятичная',
+  11:'11', 12:'12', 13:'13', 14:'14', 15:'15',
+  16:'16 — шестнадцатеричная', 17:'17', 18:'18', 19:'19', 20:'20',
+  21:'21', 22:'22', 23:'23', 24:'24', 25:'25', 26:'26', 27:'27',
+  28:'28', 29:'29', 30:'30', 31:'31', 32:'32', 33:'33', 34:'34',
+  35:'35', 36:'36'
+};
+for (let b = 2; b <= 36; b++) {
+  const label = BASE_NAMES[b] || String(b);
+  fromEl.add(new Option(label, b));
+  toEl.add(new Option(label, b));
+}
+fromEl.value = 2;
+toEl.value   = 10;
+
+[
+  {b: 2,  l: 'в 2'},
+  {b: 8,  l: 'в 8'},
+  {b: 10, l: 'в 10'},
+  {b: 16, l: 'в 16'}
+].forEach(({b,l}) => {
+  const btn = document.createElement('button');
+  btn.className = 'btn';
+  btn.textContent = l;
+  btn.onclick = () => { toEl.value = b; convert(); };
+  $('quick').appendChild(btn);
+});
+
+const DIGITS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+function parseInBase(str, base) {
+  const s = String(str).trim().replace(/[\s_]/g, '').toUpperCase();
+  if (!s) throw new Error('Введите число.');
+  let neg = false, body = s;
+  if (body[0] === '-') { neg = true;  body = body.slice(1); }
+  else if (body[0] === '+') {         body = body.slice(1); }
+  if (!body) throw new Error('Нет цифр.');
+  if (base < 2 || base > 36) throw new Error('Основание вне 2–36.');
+  let result = 0n;
+  const B = BigInt(base);
+  for (const ch of body) {
+    const d = DIGITS.indexOf(ch);
+    if (d < 0 || d >= base) {
+      throw new Error('Символ «' + ch + '» недопустим для основания ' + base + '.');
+    }
+    result = result * B + BigInt(d);
+  }
+  return neg ? -result : result;
+}
+
+function toBase(num, base) {
+  if (num === 0n) return '0';
+  const neg = num < 0n;
+  let n = neg ? -num : num;
+  const B = BigInt(base);
+  let out = '';
+  while (n > 0n) {
+    out = DIGITS[Number(n % B)] + out;
+    n /= B;
+  }
+  return (neg ? '-' : '') + out;
+}
+
+function setError(msg) {
+  outEl.className = 'result err';
+  outEl.textContent = msg;
+  copyBtn.hidden = true;
+}
+function setResult(txt) {
+  outEl.className = 'result';
+  outEl.textContent = txt;
+  copyBtn.hidden = false;
+}
+function clearResult() {
+  outEl.className = 'result';
+  outEl.textContent = '—';
+  copyBtn.hidden = true;
+}
+
+function convert() {
+  const raw = valueEl.value;
+  const from = +fromEl.value;
+  const to   = +toEl.value;
+  if (raw.trim() === '') { clearResult(); return; }
+  try {
+    const n = parseInBase(raw, from);
+    setResult(toBase(n, to));
+  } catch (e) {
+    setError(e.message);
+  }
+}
+
+let t = null;
+function schedule() { clearTimeout(t); t = setTimeout(convert, 120); }
+
+valueEl.addEventListener('input', schedule);
+fromEl.addEventListener('change', convert);
+toEl.addEventListener('change', convert);
+
+function swapSystems() {
+  const f = fromEl.value, tt = toEl.value;
+  fromEl.value = tt; toEl.value = f;
+  const cur = outEl.textContent;
+  if (!outEl.classList.contains('err') && cur !== '—') {
+    valueEl.value = cur;
+  }
+  convert();
+}
+$('swapBtn').onclick = swapSystems;
+$('swapBtn2').onclick = swapSystems;
+
+copyBtn.onclick = async () => {
+  const txt = outEl.textContent;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(txt);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    }
+    copyBtn.textContent = 'скопировано';
+    setTimeout(() => copyBtn.textContent = 'копировать', 1200);
+  } catch {}
+};
+
+/* --- История --- */
+const HK = 'bf_history_v1';
+const historyBox = $('history');
+const historyTools = $('historyTools');
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HK) || '[]'); }
+  catch { return []; }
+}
+function saveHistory(list) {
+  try { localStorage.setItem(HK, JSON.stringify(list)); } catch {}
+}
+function renderHistory() {
+  const list = loadHistory();
+  if (!list.length) {
+    historyBox.innerHTML = '<div class="history-empty">Пока пусто. Сохрани результат кнопкой «в историю».</div>';
+    historyTools.hidden = true;
+    return;
+  }
+  historyBox.innerHTML = list.map((h, i) =>
+    '<div class="history-item" data-i="' + i + '">' +
+      '<span class="in">' + h.v + '<sub>' + h.f + '</sub></span>' +
+      '<span class="arr">→</span>' +
+      '<span class="out">' + h.r + '<sub>' + h.t + '</sub></span>' +
+    '</div>'
+  ).join('');
+  historyTools.hidden = false;
+
+  historyBox.querySelectorAll('.history-item').forEach(el => {
+    el.onclick = () => {
+      const h = loadHistory()[+el.dataset.i];
+      valueEl.value = h.v;
+      fromEl.value = h.f;
+      toEl.value = h.t;
+      convert();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+  });
+}
+$('saveBtn').onclick = () => {
+  const raw = valueEl.value.trim();
+  if (!raw || outEl.classList.contains('err') || outEl.textContent === '—') return;
+  const list = loadHistory();
+  list.unshift({ v: raw, f: fromEl.value, t: toEl.value, r: outEl.textContent });
+  saveHistory(list.slice(0, 30));
+  renderHistory();
+  const btn = $('saveBtn');
+  btn.textContent = '✓ сохранено';
+  setTimeout(() => btn.textContent = '💾 в историю', 1200);
+};
+$('clearBtn').onclick = () => { valueEl.value = ''; convert(); };
+$('clearHistory').onclick = () => { saveHistory([]); renderHistory(); };
+renderHistory();
+
+/* --- Бит/байт --- */
+const bitEls = ['bits','bytes','kbytes','mbytes','gbytes']
+  .map(id => document.getElementById(id))
+  .filter(Boolean);
+
+if (bitEls.length === 5) {
+  const FACTORS = [
+    1n,
+    8n,
+    8n * 1024n,
+    8n * 1024n * 1024n,
+    8n * 1024n * 1024n * 1024n
+  ];
+
+  function bitUpdate(srcIdx) {
+    const el = bitEls[srcIdx];
+    if (!el) return;
+    const raw = String(el.value || '').replace(/[\s_]/g, '').replace(',', '.');
+    if (raw === '' || isNaN(Number(raw))) return;
+    const n = Number(raw);
+    if (!isFinite(n)) return;
+    const bitsExact = Math.round(n * Number(FACTORS[srcIdx]));
+    for (let i = 0; i < bitEls.length; i++) {
+      if (i === srcIdx) continue;
+      const v = bitsExact / Number(FACTORS[i]);
+      bitEls[i].value = Number.isInteger(v)
+        ? String(v)
+        : v.toFixed(6).replace(/\.?0+$/, '');
+    }
+  }
+
+  bitEls.forEach((el, i) => {
+    el.addEventListener('input', () => bitUpdate(i));
+  });
+}
+
+/* --- ASCII --- */
+const asciiBox = document.getElementById('asciiBox');
+if (asciiBox) {
+  let asciiHtml = '';
+  for (let i = 0; i < 128; i++) {
+    let ch = '';
+    if (i === 32) ch = '␣';
+    else if (i < 33 || i === 127) ch = '·';
+    else ch = String.fromCharCode(i);
+    asciiHtml += '<span data-code="' + i + '">' + ch +
+                 '<small>' + i + '</small></span>';
+  }
+  asciiBox.innerHTML = asciiHtml;
+
+  asciiBox.addEventListener('click', e => {
+    const sp = e.target.closest('span');
+    if (!sp) return;
+    const code = +sp.dataset.code;
+    if (code >= 33 && code < 127) {
+      valueEl.value = String.fromCharCode(code);
+      convert();
+    } else if (code >= 0 && code < 128) {
+      valueEl.value = String(code);
+      fromEl.value = 10;
+      toEl.value = 2;
+      convert();
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') convert();
+});
+
+let visits = 0;
+try { visits = parseInt(localStorage.getItem('bf_visits') || '0', 10) || 0; } catch {}
+visits += 1;
+try { localStorage.setItem('bf_visits', String(visits)); } catch {}
+const counterEl = $('counter');
+if (counterEl) counterEl.textContent = String(visits).padStart(8, '0');
+
+convert();
+</script>
+</body>
+</html>

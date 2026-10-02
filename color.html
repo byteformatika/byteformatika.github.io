@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b2838">
+<title>ByteFormatika :: цвет</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <b>ByteFormatika</b>
+  <span class="sep">::</span>
+  <a href="index.html">главная</a>
+  <span class="sep">|</span>
+  <a href="tools.html">инструменты</a>
+  <span class="sep">|</span>
+  <span class="active">цвет</span>
+  <span class="sep">|</span>
+  <a href="about.html">об авторе</a>
+</div>
+
+<div class="wrap">
+  <div class="head">
+    <h1>Цвет <span class="byte">HEX / RGB / HSL</span></h1>
+    <div class="sub">// конвертер цветов //</div>
+  </div>
+
+  <div class="panel">
+    <h2>Ввод</h2>
+    <div class="form-grid row-3">
+      <div>
+        <label for="hex">HEX</label>
+        <input id="hex" type="text" value="#66c0f4">
+      </div>
+      <div>
+        <label for="rgb">RGB (r, g, b)</label>
+        <input id="rgb" type="text" value="102, 192, 244">
+      </div>
+      <div>
+        <label for="hsl">HSL (h, s%, l%)</label>
+        <input id="hsl" type="text" value="202, 88%, 68%">
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+      <input id="picker" type="color" value="#66c0f4" style="width:56px;height:38px;padding:2px;border-radius:3px;border:1px solid #0b1218;background:#0c131b;cursor:pointer">
+      <span class="hint">Пипетка</span>
+      <div id="preview" style="flex:1;height:38px;border-radius:3px;border:1px solid #0b1218;background:#66c0f4;box-shadow:0 2px 6px rgba(0,0,0,.5) inset"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Результат</h2>
+    <div class="result-wrap">
+      <div class="result" id="out">#66c0f4</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    &copy; ByteFormatika &nbsp;·&nbsp; 2026–????<br>
+    <a href="tools.html">← к инструментам</a>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const hexEl = $('hex'), rgbEl = $('rgb'), hslEl = $('hsl');
+const picker = $('picker'), preview = $('preview'), outEl = $('out');
+
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+function hexToRgb(hex) {
+  hex = hex.trim().replace(/^#/, '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  if (!/^[0-9a-fA-F]{6}$/.test(hex)) throw new Error('HEX: нужно 3 или 6 символов.');
+  return [
+    parseInt(hex.slice(0, 2), 16),
+    parseInt(hex.slice(2, 4), 16),
+    parseInt(hex.slice(4, 6), 16)
+  ];
+}
+function rgbToHex(r, g, b) {
+  return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+}
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  const d = max - min;
+  if (d !== 0) {
+    s = d / (1 - Math.abs(2 * l - 1));
+    switch (max) {
+      case r: h = ((g - b) / d) % 6; break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  return [Math.round(h), Math.round(s * 100), Math.round(l * 100)];
+}
+function hslToRgb(h, s, l) {
+  h = ((h % 360) + 360) % 360;
+  s /= 100; l /= 100;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  let r=0, g=0, b=0;
+  if (h < 60)      { r = c; g = x; b = 0; }
+  else if (h < 120){ r = x; g = c; b = 0; }
+  else if (h < 180){ r = 0; g = c; b = x; }
+  else if (h < 240){ r = 0; g = x; b = c; }
+  else if (h < 300){ r = x; g = 0; b = c; }
+  else             { r = c; g = 0; b = x; }
+  return [Math.round((r+m)*255), Math.round((g+m)*255), Math.round((b+m)*255)];
+}
+
+function update(rgb, source) {
+  const [r, g, b] = rgb;
+  const hex = rgbToHex(r, g, b);
+  const [h, s, l] = rgbToHsl(r, g, b);
+  if (source !== 'hex') hexEl.value = hex;
+  if (source !== 'rgb') rgbEl.value = r + ', ' + g + ', ' + b;
+  if (source !== 'hsl') hslEl.value = h + ', ' + s + '%, ' + l + '%';
+  picker.value = hex;
+  preview.style.background = hex;
+  outEl.className = 'result';
+  outEl.textContent = 'hex ' + hex + '   ·   rgb(' + r + ', ' + g + ', ' + b + ')   ·   hsl(' + h + ', ' + s + '%, ' + l + '%)';
+}
+
+hexEl.addEventListener('input', () => {
+  try { update(hexToRgb(hexEl.value), 'hex'); }
+  catch (e) { outEl.className = 'result err'; outEl.textContent = e.message; }
+});
+rgbEl.addEventListener('input', () => {
+  const m = rgbEl.value.match(/\d+/g);
+  if (!m || m.length < 3) return;
+  const rgb = m.slice(0, 3).map(v => clamp(+v, 0, 255));
+  update(rgb, 'rgb');
+});
+hslEl.addEventListener('input', () => {
+  const m = hslEl.value.match(/\d+/g);
+  if (!m || m.length < 3) return;
+  const [h, s, l] = [clamp(+m[0], 0, 360), clamp(+m[1], 0, 100), clamp(+m[2], 0, 100)];
+  update(hslToRgb(h, s, l), 'hsl');
+});
+picker.addEventListener('input', () => update(hexToRgb(picker.value), null));
+
+update([102, 192, 244], null);
+</script>
+</body>
+</html>

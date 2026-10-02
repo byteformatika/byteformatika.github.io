@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b2838">
+<title>ByteFormatika :: хэши</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <b>ByteFormatika</b>
+  <span class="sep">::</span>
+  <a href="index.html">главная</a>
+  <span class="sep">|</span>
+  <a href="tools.html">инструменты</a>
+  <span class="sep">|</span>
+  <span class="active">хэши</span>
+  <span class="sep">|</span>
+  <a href="about.html">об авторе</a>
+</div>
+
+<div class="wrap">
+  <div class="head">
+    <h1><span class="byte">Хэши</span></h1>
+    <div class="sub">// SHA-1, SHA-256, SHA-512 //</div>
+  </div>
+
+  <div class="notice">
+    <div class="notice-icon">!</div>
+    <div class="notice-body">
+      <b>Важно</b>
+      Всё считается локально в браузере. Никакие данные никуда не отправляются.
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Ввод</h2>
+    <textarea id="inp" placeholder="Введите текст…">Привет, мир!</textarea>
+    <div class="tool-row">
+      <button class="btn" id="calcBtn">посчитать хэши</button>
+      <button class="btn" id="clearBtn">🗑 очистить</button>
+    </div>
+  </div>
+
+  <div class="panel" id="outPanel" hidden>
+    <h2>Результат</h2>
+    <div id="outList"></div>
+  </div>
+
+  <div class="foot">
+    &copy; ByteFormatika &nbsp;·&nbsp; 2026–????<br>
+    <a href="tools.html">← к инструментам</a>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const inpEl = $('inp');
+
+async function sha(algo, data) {
+  const enc = new TextEncoder().encode(data);
+  const buf = await crypto.subtle.digest(algo, enc);
+  return [...new Uint8Array(buf)]
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+$('calcBtn').onclick = async () => {
+  const data = inpEl.value;
+  const panel = $('outPanel');
+  const list = $('outList');
+  panel.hidden = false;
+  list.innerHTML = '<p class="hint">Считаю…</p>';
+
+  try {
+    const [s1, s256, s512] = await Promise.all([
+      sha('SHA-1', data),
+      sha('SHA-256', data),
+      sha('SHA-512', data)
+    ]);
+    list.innerHTML = `
+      <p class="hint" style="margin-bottom:4px"><b>SHA-1</b></p>
+      <div class="result" style="font-size:13px;min-height:auto;word-break:break-all;margin-bottom:10px">${s1}</div>
+      <p class="hint" style="margin-bottom:4px"><b>SHA-256</b></p>
+      <div class="result" style="font-size:13px;min-height:auto;word-break:break-all;margin-bottom:10px">${s256}</div>
+      <p class="hint" style="margin-bottom:4px"><b>SHA-512</b></p>
+      <div class="result" style="font-size:13px;min-height:auto;word-break:break-all">${s512}</div>
+    `;
+  } catch (e) {
+    list.innerHTML = '<div class="result err">' + e.message + '</div>';
+  }
+};
+
+$('clearBtn').onclick = () => {
+  inpEl.value = '';
+  $('outPanel').hidden = true;
+};
+</script>
+</body>
+</html>

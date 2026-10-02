@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b2838">
+<title>ByteFormatika :: римские цифры</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <b>ByteFormatika</b>
+  <span class="sep">::</span>
+  <a href="index.html">главная</a>
+  <span class="sep">|</span>
+  <a href="tools.html">инструменты</a>
+  <span class="sep">|</span>
+  <span class="active">римские</span>
+  <span class="sep">|</span>
+  <a href="about.html">об авторе</a>
+</div>
+
+<div class="wrap">
+  <div class="head">
+    <h1>Римские <span class="byte">цифры</span></h1>
+    <div class="sub">// 1 – 3999 //</div>
+  </div>
+
+  <div class="panel">
+    <h2>Перевод</h2>
+    <label for="num">Число (арабское или римское)</label>
+    <input id="num" type="text" value="2026" placeholder="2026 / MMXXVI">
+    <div class="tool-row">
+      <button class="btn" id="toRoman">→ в римское</button>
+      <button class="btn" id="toArabic">→ в арабское</button>
+      <button class="btn" id="clearBtn">🗑 очистить</button>
+    </div>
+    <div class="result-wrap" style="margin-top:12px">
+      <div class="result" id="out">—</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Справка</h2>
+    <table>
+      <tr><th>Символ</th><th>Значение</th></tr>
+      <tr><td>I</td><td>1</td></tr>
+      <tr><td>V</td><td>5</td></tr>
+      <tr><td>X</td><td>10</td></tr>
+      <tr><td>L</td><td>50</td></tr>
+      <tr><td>C</td><td>100</td></tr>
+      <tr><td>D</td><td>500</td></tr>
+      <tr><td>M</td><td>1000</td></tr>
+    </table>
+    <p class="hint">Поддерживаются значения от 1 до 3999.</p>
+  </div>
+
+  <div class="foot">
+    &copy; ByteFormatika &nbsp;·&nbsp; 2026–????<br>
+    <a href="tools.html">← к инструментам</a>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const numEl = $('num');
+const outEl = $('out');
+
+const ROMAN = [
+  [1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],
+  [100,'C'],[90,'XC'],[50,'L'],[40,'XL'],
+  [10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']
+];
+
+function toRoman(n) {
+  if (!Number.isInteger(n) || n < 1 || n > 3999) {
+    throw new Error('Число должно быть целым от 1 до 3999.');
+  }
+  let res = '';
+  for (const [v, s] of ROMAN) {
+    while (n >= v) { res += s; n -= v; }
+  }
+  return res;
+}
+
+function fromRoman(s) {
+  s = s.toUpperCase().replace(/\s+/g, '');
+  if (!/^[IVXLCDM]+$/.test(s)) throw new Error('Недопустимые символы.');
+  const map = { I:1, V:5, X:10, L:50, C:100, D:500, M:1000 };
+  let n = 0;
+  for (let i = 0; i < s.length; i++) {
+    const cur = map[s[i]];
+    const nxt = map[s[i+1]] || 0;
+    n += cur < nxt ? -cur : cur;
+  }
+  if (n < 1 || n > 3999) throw new Error('Число вне диапазона 1–3999.');
+  if (toRoman(n) !== s) throw new Error('Некорректная запись.');
+  return n;
+}
+
+function show(fn) {
+  try {
+    const v = fn();
+    outEl.className = 'result';
+    outEl.textContent = v;
+  } catch (e) {
+    outEl.className = 'result err';
+    outEl.textContent = e.message;
+  }
+}
+
+$('toRoman').onclick = () => show(() => toRoman(+numEl.value.trim()));
+$('toArabic').onclick = () => show(() => fromRoman(numEl.value));
+$('clearBtn').onclick = () => { numEl.value = ''; outEl.className = 'result'; outEl.textContent = '—'; };
+</script>
+</body>
+</html>
